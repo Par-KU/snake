@@ -827,6 +827,14 @@
     try { bgm.pause(); } catch {}
     const dur = (performance.now() - state.startedAt) / 1000;
     pushScore(state.jugador, dur, state.score, state.levelIndex);
+    window.dispatchEvent(new CustomEvent("snake:gameover", {
+  detail: {
+    nickname: state.jugador,
+    score: Number(state.score),
+    survival_seconds: Number(dur.toFixed(2)),
+    level_reached: state.levelIndex + 1
+  }
+}));
     showCenterText(
       `🟥 GAME OVER<br>` +
       `<span style="font-size:14px">` +
