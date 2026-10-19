@@ -2,64 +2,84 @@
 
 ## 1. Descripción del proyecto
 
-Snake Retro es un juego web desarrollado con HTML, CSS y JavaScript.
-Para el Reto 3 se incorporó un backend con Flask y una base de datos
-MariaDB/MySQL para registrar partidas y consultar clasificaciones.
+Snake Retro es una aplicación web desarrollada con HTML, CSS y JavaScript. Para el Reto 3 se incorporó una API desarrollada con Flask y una base de datos MariaDB compatible con MySQL.
 
-La aplicación contempla tres clasificaciones:
-- Mejores puntuaciones históricas.
-- Mayor tiempo de supervivencia.
-- Mejores puntuaciones de los últimos siete días.
+La aplicación registra las partidas y muestra tres clasificaciones: puntuación histórica, tiempo de supervivencia y puntuaciones de los últimos siete días.
+
+El proyecto se desarrolló en Windows, utilizando XAMPP, Apache, OpenSSL y un entorno virtual de Python. Los cambios del reto se encuentran en la rama `reto3-mejoras`, mientras que la rama `main` conserva la versión original.
 
 ## 2. Tecnologías y versiones
 
-Entorno verificado durante el desarrollo:
+Versiones verificadas durante las pruebas locales:
 
 - Python: 3.13.1
 - Flask: 3.1.3
 - PyMySQL: 1.2.3
 - Flask-Cors: 6.0.5
 - MariaDB: 10.4.32
-- Servidor web local: Python http.server
-- Base de datos: snake_retro
+- Apache HTTP Server: 2.4.58
+- OpenSSL: 3.1.3
 
-Las versiones de Python y de las dependencias corresponden
-al entorno de desarrollo utilizado para las pruebas.
+Tecnologías adicionales:
+
+- HTML5, CSS y JavaScript.
+- XAMPP y phpMyAdmin.
+- Apache VirtualHosts y proxy inverso.
+- Certificado SSL/TLS autofirmado.
+- Lighthouse para evaluación de rendimiento.
+
+Las versiones anteriores corresponden al entorno utilizado para las pruebas. El archivo `backend/requirements.txt` declara rangos de versiones compatibles para las dependencias de Python.
 
 ## 3. Requisitos previos
 
+Para reproducir la configuración local se requiere:
+
 - Windows.
 - Python instalado.
-- XAMPP con MariaDB/MySQL.
-- Navegador web actualizado.
-- Archivos del proyecto descargados desde la rama reto3-mejoras.
+- XAMPP con Apache y MariaDB/MySQL.
+- Un navegador actualizado.
+- Los archivos del proyecto descargados desde la rama `reto3-mejoras` del repositorio.
+
+Repositorio: https://github.com/Par-KU/snake/tree/reto3-mejoras
+
+Antes de iniciar las pruebas, debe comprobarse que los puertos 80 y 443 estén disponibles para Apache, el puerto 3307 para MariaDB en la configuración utilizada y el puerto 5000 para Flask.
+
+Los puertos pueden cambiar según la instalación local. Si se modifican, también deberán actualizarse las configuraciones correspondientes.
 
 ## 4. Configuración de la base de datos
 
-1. Iniciar MySQL desde XAMPP.
-2. Abrir http://localhost/phpmyadmin
-3. Abrir la pestaña SQL.
-4. Ejecutar el contenido de database/schema.sql.
-5. Verificar la creación de la base de datos snake_retro.
+### 4.1. Iniciar MariaDB
 
-El esquema crea las tablas:
+1. Abrir XAMPP Control Panel.
+2. Iniciar el servicio de MySQL.
+3. Abrir phpMyAdmin desde XAMPP o mediante `http://localhost/phpmyadmin`.
 
-- players: identificadores anónimos y apodos.
-- games: puntuación, supervivencia, nivel y fecha de la partida.
+En el entorno original, MariaDB se encuentra disponible en el puerto 3307.
 
-En el entorno de desarrollo utilizado, MariaDB escucha en el
-puerto 3307. Si la instalación utiliza otro puerto, debe ajustarse
-la variable DB_PORT.
+### 4.2. Crear las tablas
+
+En phpMyAdmin:
+
+1. Abrir la pestaña SQL.
+2. Ejecutar el contenido de `database/schema.sql`.
+3. Confirmar la creación de la base de datos `snake_retro`.
+4. Verificar que existan las tablas `players` y `games`.
+
+La tabla `players` almacena el identificador anónimo, el apodo y la fecha de creación. La tabla `games` almacena los puntos, el tiempo de supervivencia, el nivel alcanzado y la fecha de la partida.
+
+La relación entre ambas tablas permite asociar cada partida con su jugador. El esquema incluye índices para facilitar las consultas por puntuación, supervivencia y fecha.
+
+El script utiliza `CREATE DATABASE IF NOT EXISTS` y `CREATE TABLE IF NOT EXISTS`, por lo que puede ejecutarse nuevamente sin recrear las tablas existentes. No elimina los registros anteriores.
 
 ## 5. Instalación del backend
 
-Abrir CMD en la carpeta raíz del proyecto.
+Abrir CMD en la carpeta raíz del proyecto, donde se encuentran `index.html`, `backend` y `database`.
 
 Crear el entorno virtual:
 
     py -m venv .venv
 
-Activarlo en Windows:
+Activar el entorno virtual:
 
     .venv\Scripts\activate
 
@@ -67,79 +87,204 @@ Instalar las dependencias:
 
     python -m pip install -r backend\requirements.txt
 
-Para verificar las versiones instaladas:
+Comprobar las versiones instaladas:
 
+    python --version
     python -m pip show Flask PyMySQL Flask-Cors
 
-## 6. Configuración de conexión
+El entorno virtual mantiene las dependencias separadas de las instalaciones globales de Python.
 
-El backend lee estas variables de entorno:
+## 6. Configuración de la conexión a MariaDB
 
-- DB_HOST: dirección del servidor de base de datos.
-- DB_PORT: puerto de MariaDB/MySQL.
-- DB_USER: usuario de la base de datos.
-- DB_PASSWORD: contraseña configurada para ese usuario.
-- DB_NAME: nombre de la base de datos.
+El backend utiliza las siguientes variables de entorno:
 
-Valores utilizados por defecto para las pruebas locales:
+- `DB_HOST`: dirección del servidor de base de datos.
+- `DB_PORT`: puerto de MariaDB/MySQL.
+- `DB_USER`: usuario de la base de datos.
+- `DB_PASSWORD`: contraseña del usuario.
+- `DB_NAME`: nombre de la base de datos.
+- `FLASK_PORT`: puerto de ejecución del backend.
 
-- DB_HOST: 127.0.0.1
-- DB_PORT: 3307
-- DB_NAME: snake_retro
+Los valores predeterminados definidos por la aplicación son:
 
-El usuario y la contraseña deben corresponder a la configuración
-local de MariaDB/MySQL. No se deben publicar credenciales reales.
+- `DB_HOST=127.0.0.1`
+- `DB_PORT=3307`
+- `DB_NAME=snake_retro`
+- `FLASK_PORT=5000`
 
-## 7. Iniciar y verificar el backend
+El usuario y la contraseña deben corresponder a la configuración real de MariaDB/MySQL. En una instalación local donde el usuario `root` no tenga contraseña, el parámetro `DB_PASSWORD` puede permanecer vacío. Si se configuró una contraseña, debe establecerse mediante la variable de entorno correspondiente.
 
-Con el entorno virtual activo, ejecutar:
+No se deben publicar contraseñas reales en GitHub.
+
+## 7. Iniciar y comprobar Flask
+
+Con MariaDB activo y el entorno virtual habilitado, ejecutar desde la raíz del proyecto:
 
     python backend\app.py
 
-El servidor API utiliza por defecto:
+Por defecto, Flask escucha en:
 
     http://127.0.0.1:5000
 
-Comprobar la conexión con la base de datos en:
+Para comprobar la conexión con MariaDB, abrir:
 
     http://127.0.0.1:5000/api/health
 
-La respuesta debe incluir el estado "ok" y el nombre de la
-base de datos cuando la conexión se realiza correctamente.
+La respuesta esperada contiene el estado `ok`, el nombre de la base de datos y la versión del servidor.
 
-## 8. Iniciar el frontend
+Si la respuesta indica un error de conexión, comprobar que MariaDB esté activo y que el puerto, el usuario y la contraseña sean correctos.
 
-Abrir una segunda ventana de CMD en la carpeta raíz del proyecto.
+Mantener abierta la consola de Flask durante las pruebas.
 
-Ejecutar:
+## 8. Configuración del dominio local
 
-    py -m http.server 8000 --bind 127.0.0.1
+La aplicación utiliza el dominio de pruebas `snake.test`, asociado a `127.0.0.1` en el archivo `hosts` de Windows.
 
-Abrir el juego en:
+El archivo se encuentra en:
 
-    http://127.0.0.1:8000/index.html
+    C:\Windows\System32\drivers\etc\hosts
 
-Mantener abiertas las ventanas de CMD mientras se realizan
-las pruebas locales.
+Para configurar el dominio en un equipo nuevo:
 
-## 9. Endpoints de la API
+1. Abrir el Bloc de notas como administrador.
+2. Abrir el archivo `hosts`, seleccionando la opción para mostrar todos los archivos.
+3. Añadir la siguiente línea, si todavía no existe:
 
-- GET /api/health: comprueba la conexión a la base de datos.
-- POST /api/games: registra una partida.
-- GET /api/leaderboard/points: consulta puntuaciones históricas.
-- GET /api/leaderboard/survival: consulta tiempos de supervivencia.
-- GET /api/leaderboard/weekly: consulta puntuaciones de los últimos
-  siete días.
+       127.0.0.1 snake.test
 
-Las rutas de clasificación admiten el parámetro limit.
+4. Guardar los cambios.
 
-## 10. Consideraciones
+Este dominio es local: no publica la aplicación en Internet ni hace que sea accesible desde otros equipos automáticamente.
 
-El entorno descrito es local y sirve para desarrollo y evaluación.
-Para permitir que usuarios externos compartan clasificaciones,
-el backend y la base de datos deberán desplegarse en una infraestructura
-accesible por Internet y configurarse de forma segura.
+## 9. Configuración de Apache y HTTPS
 
-El identificador anónimo se almacena en el navegador. No equivale
-a una cuenta verificada y puede perderse al borrar los datos del
-navegador o cambiar de dispositivo.
+### 9.1. Activación de módulos
+
+En la configuración de Apache, comprobar que estén habilitados los módulos necesarios para SSL, encabezados de seguridad, reescritura y proxy HTTP. En la instalación utilizada se verificaron, entre otros:
+
+- `headers_module`
+- `proxy_module`
+- `proxy_http_module`
+- `rewrite_module`
+
+También debe estar habilitada la inclusión de la configuración de VirtualHosts.
+
+### 9.2. Certificado local
+
+Para las pruebas se generó un certificado autofirmado con OpenSSL. Los archivos se guardaron fuera del repositorio, en:
+
+    C:\xampp\apache\conf\snake-ssl\
+
+Los nombres utilizados fueron:
+
+- `snake.test.crt`: certificado.
+- `snake.test.key`: clave privada.
+
+La clave privada no debe incluirse en el ZIP del proyecto ni subirse a GitHub. Para reproducir esta configuración en otro equipo, se debe generar un certificado propio y actualizar las rutas correspondientes.
+
+Un certificado autofirmado permite probar HTTPS de forma local, pero el navegador puede advertir que no confía en su emisor. Esta configuración no sustituye un certificado emitido por una autoridad de confianza pública.
+
+### 9.3. VirtualHosts
+
+El archivo utilizado para configurar los sitios fue:
+
+    C:\xampp\apache\conf\extra\httpd-vhosts.conf
+
+Se configuraron VirtualHosts independientes para `transcriptor.test` y `snake.test`. No se debe reemplazar todo el archivo en un equipo que ya tenga otros sitios; únicamente deben añadirse o adaptarse los bloques correspondientes.
+
+En los bloques de Snake Retro, las directivas `DocumentRoot` y `<Directory>` deben apuntar a la carpeta real donde se extrajeron los archivos del proyecto. La ruta del equipo original no necesariamente coincide con la del equipo donde se reproduzca la configuración.
+
+El VirtualHost HTTP redirige las solicitudes hacia HTTPS. El VirtualHost HTTPS utiliza el certificado local y las reglas de proxy inverso para reenviar las solicitudes `/api/` a Flask en `127.0.0.1:5000`.
+
+La configuración debe conservar estas funciones:
+
+- Redirección de HTTP a HTTPS.
+- Entrega de archivos estáticos desde la carpeta del proyecto.
+- Reenvío de `/api/` hacia Flask.
+- Registro de accesos y errores de Apache.
+
+### 9.4. Cabeceras de seguridad
+
+El VirtualHost HTTPS de `snake.test` incluye las cabeceras:
+
+- `Content-Security-Policy`
+- `Strict-Transport-Security`
+- `X-Content-Type-Options`
+- `X-Frame-Options`
+- `Referrer-Policy`
+
+La política CSP restringe los recursos y las conexiones permitidos. HSTS solicita al navegador utilizar HTTPS durante el tiempo especificado en su directiva `max-age`.
+
+### 9.5. Validar y reiniciar Apache
+
+Después de modificar la configuración, ejecutar en CMD:
+
+    C:\xampp\apache\bin\httpd.exe -t
+
+El resultado esperado es:
+
+    Syntax OK
+
+Si la validación es correcta, reiniciar Apache desde XAMPP Control Panel.
+
+Si Apache no inicia, revisar los mensajes del panel y los registros de errores antes de modificar más directivas.
+
+## 10. Ejecutar y verificar la aplicación
+
+Para utilizar la aplicación completa en el entorno configurado:
+
+1. Iniciar MariaDB desde XAMPP.
+2. Activar el entorno virtual de Python.
+3. Ejecutar `python backend\app.py`.
+4. Iniciar o reiniciar Apache desde XAMPP.
+5. Abrir en el navegador:
+
+       https://snake.test/
+
+La aplicación utiliza `leaderboard.js` para consultar las clasificaciones mediante la ruta relativa `/api`. Apache reenvía esas solicitudes al backend Flask.
+
+Para verificar la conexión mediante HTTPS, ejecutar:
+
+    curl.exe -k -i https://snake.test/api/health
+
+La opción `-k` permite efectuar esta comprobación con el certificado autofirmado. No instala el certificado como confiable ni modifica la configuración de seguridad del navegador.
+
+La respuesta esperada es `200 OK` y un JSON que incluya el estado `ok` y la base de datos `snake_retro`.
+
+Para comprobar la redirección de HTTP a HTTPS:
+
+    curl.exe --noproxy "*" -I --resolve snake.test:80:127.0.0.1 http://snake.test/
+
+La respuesta esperada es `301 Moved Permanently` con una cabecera `Location` que apunte a `https://snake.test/`.
+
+Para comprobar las cabeceras de seguridad:
+
+    curl.exe -k -I https://snake.test/
+
+La respuesta debe incluir las cabeceras de seguridad configuradas en Apache.
+
+## 11. Endpoints de la API
+
+| Método | Ruta | Función |
+|---|---|---|
+| GET | `/api/health` | Verifica la conexión con la base de datos. |
+| POST | `/api/games` | Registra una partida. |
+| GET | `/api/leaderboard/points` | Consulta las puntuaciones históricas. |
+| GET | `/api/leaderboard/survival` | Consulta los mayores tiempos de supervivencia. |
+| GET | `/api/leaderboard/weekly` | Consulta puntuaciones de los últimos siete días. |
+
+Las rutas de clasificación admiten el parámetro `limit` para limitar la cantidad de resultados.
+
+## 12. Pruebas funcionales y de rendimiento
+
+Las pruebas se realizaron en Google Chrome y Microsoft Edge. Se comprobó la carga del juego mediante HTTPS, la visualización de las clasificaciones y el funcionamiento de los controles principales.
+
+Se utilizó Lighthouse en modo Navegación, dispositivo Escritorio y categoría Rendimiento. En la prueba registrada se obtuvo una puntuación de 100/100. Los resultados corresponden a la ejecución local y pueden variar según el dispositivo y las condiciones de prueba.
+
+## 13. Consideraciones de seguridad y alcance
+
+Esta instalación corresponde a un entorno local de desarrollo y evaluación. Para permitir que usuarios externos compartan las clasificaciones, sería necesario desplegar el backend y la base de datos en una infraestructura accesible por Internet y proteger adecuadamente el servicio.
+
+El identificador almacenado en el navegador es anónimo y no verifica la identidad real del jugador. Puede perderse al borrar los datos locales o cambiar de dispositivo. Además, las puntuaciones no cuentan con una verificación completa contra trampas.
+
+No deben compartirse certificados privados, contraseñas ni otros secretos. La configuración de Apache y del certificado debe adaptarse a cada equipo donde se reproduzca el proyecto.
